@@ -14,10 +14,10 @@ var voiceConnection *discordgo.VoiceConnection
 
 func main() {
 
-	sess, err := discordgo.New("")
-
+	sess, err := discordgo.New("Bot ")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	sess.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -26,11 +26,11 @@ func main() {
 			return
 		}
 
-		if m.Content == "hello" {
+		switch m.Content {
+		case "hello":
 			s.ChannelMessageSend(m.ChannelID, "world!")
-		}
 
-		if m.Content == "!play" {
+		case "!play":
 			// Find the voice channel the user is in
 			guild, err := s.State.Guild(m.GuildID)
 			if err != nil {
@@ -62,14 +62,15 @@ func main() {
 			voiceConnection = vc
 			s.ChannelMessageSend(m.ChannelID, "Joined the voice channel!")
 
-			// Remember to disconnect from the voice channel when done
-		}
+			link, err := SearchYoutube("3hunna", m)
+			s.ChannelMessageSend(m.ChannelID, link.VideoURL)
 
-		if m.Content == "!quit" {
+			// Remember to disconnect from the voice channel when done
+
+		case "!quit":
 			if voiceConnection != nil {
 				voiceConnection.Disconnect()
 			}
-
 		}
 	})
 
@@ -81,7 +82,7 @@ func main() {
 	}
 	defer sess.Close()
 
-	fmt.Println("BOt onlione")
+	fmt.Println("Bot online")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
